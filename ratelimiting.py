@@ -14,6 +14,7 @@
 
 import collections
 import functools
+import threading
 import time
 
 
@@ -22,7 +23,7 @@ class RateLimiting(object):
     requests for a time period.
     """
 
-    def __init__(self, max_calls, period=1.0):
+    def __init__(self, max_calls, period=1.0, callback=None):
         """Initialze a RateLimiting objects which enforces as much as max_calls
         operations on period (eventually floating) number of seconds.
         """
@@ -37,6 +38,7 @@ class RateLimiting(object):
 
         self.period = period
         self.max_calls = max_calls
+        self.callback = callback
 
     def __call__(self, f):
         """The __call__ function allows the RateLimiting object to be used as a
@@ -53,7 +55,11 @@ class RateLimiting(object):
         # period. For this, we store the last timestamps of each call and run
         # the rate verification upon each __enter__ call.
         if len(self.calls) >= self.max_calls:
-            time.sleep(self.period - self._timespan)
+            until = time.time() + self.period - self._timespan
+            t = threading.Thread(target=self.callback, args=(until,))
+            t.daemon = True
+            t.start()
+            time.sleep(until - time.time())
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

@@ -33,6 +33,24 @@ Context manager flavor:
     ...         do_something()
     ...
 
+Using with callback:
+
+    >>> from ratelimiting import RateLimiting
+    >>> import time
+    >>> def limited(until):
+    ...     duration = int(round(until - time.time()))
+    ...     print('Rate limited, sleeping for %d seconds' % duration)
+    ...
+    >>> rate_limiter = RateLimiting(max_calls=2, period=3, callback=limited)
+    >>> for i in range(3):
+    ...     with rate_limiter:
+    ...         print('Iteration', i)
+    ...
+    Iteration 0
+    Iteration 1
+    Rate limited, sleeping for 3 seconds
+    Iteration 2
+
 License
 -------------
 
