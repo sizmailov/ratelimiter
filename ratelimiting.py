@@ -56,9 +56,10 @@ class RateLimiting(object):
         # the rate verification upon each __enter__ call.
         if len(self.calls) >= self.max_calls:
             until = time.time() + self.period - self._timespan
-            t = threading.Thread(target=self.callback, args=(until,))
-            t.daemon = True
-            t.start()
+            if self.callback:
+                t = threading.Thread(target=self.callback, args=(until,))
+                t.daemon = True
+                t.start()
             time.sleep(until - time.time())
         return self
 
