@@ -17,7 +17,7 @@ import random
 import time
 import unittest
 
-from ratelimiting import RateLimiting
+from ratelimiter import RateLimiter
 
 
 class Timer(object):
@@ -51,12 +51,12 @@ class TestBasic(unittest.TestCase):
             self.assertGreaterEqual(ts[i + max_calls] - ts[i], period)
 
     def test_bad_args(self):
-        self.assertRaises(ValueError, RateLimiting, -1, self.period)
-        self.assertRaises(ValueError, RateLimiting, +1, -self.period)
+        self.assertRaises(ValueError, RateLimiter, -1, self.period)
+        self.assertRaises(ValueError, RateLimiter, +1, -self.period)
 
     def test_limit_1(self):
         with Timer() as timer:
-            obj = RateLimiting(self.max_calls, self.period)
+            obj = RateLimiter(self.max_calls, self.period)
             for i in range(11):
                 with obj:
                     pass
@@ -64,7 +64,7 @@ class TestBasic(unittest.TestCase):
 
     def test_limit_2(self):
         calls = []
-        obj = RateLimiting(self.max_calls, self.period)
+        obj = RateLimiter(self.max_calls, self.period)
         for i in range(3 * self.max_calls):
             with obj:
                 calls.append(time.time())
@@ -73,7 +73,7 @@ class TestBasic(unittest.TestCase):
         self.validate_call_times(calls, self.max_calls, self.period)
 
     def test_decorator_1(self):
-        @RateLimiting(self.max_calls, self.period)
+        @RateLimiter(self.max_calls, self.period)
         def f():
             pass
 
@@ -83,7 +83,7 @@ class TestBasic(unittest.TestCase):
         self.assertGreaterEqual(timer.duration, self.period)
 
     def test_decorator_2(self):
-        @RateLimiting(self.max_calls, self.period)
+        @RateLimiter(self.max_calls, self.period)
         def f():
             f.calls.append(time.time())
         f.calls = []
@@ -96,7 +96,7 @@ class TestBasic(unittest.TestCase):
     def test_random(self):
         for _ in range(10):
             calls = []
-            obj = RateLimiting(self.max_calls, self.period)
+            obj = RateLimiter(self.max_calls, self.period)
             for i in range(random.randint(10, 50)):
                 with obj:
                     calls.append(time.time())
