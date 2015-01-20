@@ -1,4 +1,5 @@
-# Copyright 2013 Arnaud Porterie
+# Original work Copyright 2013 Arnaud Porterie
+# Modified work Copyright 2015 Frazer McLean
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,14 +18,19 @@ import functools
 import threading
 import time
 
+__author__ = 'Frazer McLean <frazer@frazermclean.co.uk>'
+__version__ = '0.2.1'
+__license__ = 'Apache'
+__description__ = 'Simple python rate limiting object'
 
-class RateLimiting(object):
+
+class RateLimiter(object):
     """Provides rate limiting for an operation with a configurable number of
     requests for a time period.
     """
 
     def __init__(self, max_calls, period=1.0, callback=None):
-        """Initialze a RateLimiting objects which enforces as much as max_calls
+        """Initialze a RateLimiter objects which enforces as much as max_calls
         operations on period (eventually floating) number of seconds.
         """
         if period <= 0:
@@ -41,7 +47,7 @@ class RateLimiting(object):
         self.callback = callback
 
     def __call__(self, f):
-        """The __call__ function allows the RateLimiting object to be used as a
+        """The __call__ function allows the RateLimiter object to be used as a
         regular function decorator.
         """
         @functools.wraps(f)

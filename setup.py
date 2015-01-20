@@ -1,4 +1,5 @@
-# Copyright 2013 Arnaud Porterie
+# Original work Copyright 2013 Arnaud Porterie
+# Modified work Copyright 2015 Frazer McLean
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,22 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from distutils.core import setup
+from setuptools import setup, find_packages
+import re
 
+MODULE_FILE = 'ratelimiter.py'
+init_data = open(MODULE_FILE).read()
+
+metadata = dict(re.findall("__([a-z]+)__ = '([^']+)'", init_data))
+
+AUTHOR_EMAIL = metadata['author']
+VERSION = metadata['version']
+LICENSE = metadata['license']
+DESCRIPTION = metadata['description']
+
+AUTHOR, EMAIL = re.match(r'(.*) <(.*)>', AUTHOR_EMAIL).groups()
 
 setup(
-    name='RateLimiting',
-    version='0.2.0',
-    description='Simple python rate limiting object',
-
-    author='Arnaud Porterie',
-    author_email='arnaud.porterie@gmail.com',
-    url='https://github.com/icecrime/RateLimiting',
-
-    py_modules=['ratelimiting'],
-
+    name='ratelimiter',
+    version=VERSION,
+    description=DESCRIPTION,
+    long_description=open('README').read(),
+    author=AUTHOR,
+    author_email=EMAIL,
+    url='https://github.com/RazerM/ratelimiter',
+    packages=find_packages(),
     classifiers=[
-        'Programming Language :: Python',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-    ]
-)
+        'Development Status :: 5 - Production/Stable',
+        'License :: OSI Approved :: Apache Software License',
+    ],
+    license=LICENSE)
