@@ -16,8 +16,8 @@
 from setuptools import setup, find_packages
 import re
 
-MODULE_FILE = 'ratelimiter.py'
-init_data = open(MODULE_FILE).read()
+INIT_FILE = 'ratelimiter/__init__.py'
+init_data = open(INIT_FILE).read()
 
 metadata = dict(re.findall("__([a-z]+)__ = '([^']+)'", init_data))
 
