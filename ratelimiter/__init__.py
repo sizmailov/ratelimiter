@@ -19,7 +19,7 @@ import threading
 import time
 
 __author__ = 'Frazer McLean <frazer@frazermclean.co.uk>'
-__version__ = '0.2.3'
+__version__ = '0.2.4'
 __license__ = 'Apache'
 __description__ = 'Simple python rate limiting object'
 
@@ -66,7 +66,9 @@ class RateLimiter(object):
                 t = threading.Thread(target=self.callback, args=(until,))
                 t.daemon = True
                 t.start()
-            time.sleep(until - time.time())
+            sleeptime = until - time.time()
+            if sleeptime > 0:
+                time.sleep(sleeptime)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
