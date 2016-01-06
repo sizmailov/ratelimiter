@@ -20,7 +20,7 @@ import time
 import sys
 
 __author__ = 'Frazer McLean <frazer@frazermclean.co.uk>'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 __license__ = 'Apache'
 __description__ = 'Simple python rate limiting object'
 
@@ -97,7 +97,7 @@ class RateLimiter(object):
                 if len(self.calls) >= self.max_calls:
                     until = time.time() + self.period - self._timespan
                     if self.callback:
-                        await self.callback(until)
+                        asyncio.ensure_future(self.callback(until))
                     sleeptime = until - time.time()
                     if sleeptime > 0:
                         await asyncio.sleep(sleeptime)
