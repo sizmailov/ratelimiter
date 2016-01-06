@@ -1,5 +1,5 @@
 # Original work Copyright 2013 Arnaud Porterie
-# Modified work Copyright 2015 Frazer McLean
+# Modified work Copyright 2016 Frazer McLean
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,11 +17,14 @@ import collections
 import functools
 import threading
 import time
+import sys
 
 __author__ = 'Frazer McLean <frazer@frazermclean.co.uk>'
-__version__ = '0.2.4'
+__version__ = '1.0.0'
 __license__ = 'Apache'
 __description__ = 'Simple python rate limiting object'
+
+PY35 = sys.version_info >= (3, 5)
 
 
 class RateLimiter(object):
@@ -79,6 +82,32 @@ class RateLimiter(object):
         # back below the period. This is our 'sliding period' window.
         while self._timespan >= self.period:
             self.calls.popleft()
+
+    if PY35:
+        import asyncio
+        from textwrap import dedent
+
+        # We have to exec this due to syntax errors on earlier versions.
+        aenter_code = dedent("""
+            async def __aenter__(self):
+                import asyncio
+                # We want to ensure that no more than max_calls were run in the allowed
+                # period. For this, we store the last timestamps of each call and run
+                # the rate verification upon each __enter__ call.
+                if len(self.calls) >= self.max_calls:
+                    until = time.time() + self.period - self._timespan
+                    if self.callback:
+                        await self.callback(until)
+                    sleeptime = until - time.time()
+                    if sleeptime > 0:
+                        await asyncio.sleep(sleeptime)
+                return self
+
+            """)
+        exec(aenter_code)
+
+        __aexit__ = asyncio.coroutine(__exit__)
+
 
     @property
     def _timespan(self):

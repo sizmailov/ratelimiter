@@ -1,61 +1,107 @@
-RateLimiter
-=======
+# RateLimiter
 
-[![Build Status](https://travis-ci.org/RazerM/ratelimiter.png)](https://travis-ci.org/RazerM/ratelimiter)
+[![PyPI Version][ppvi]][ppvl] [![Build Status][bsi]][bsl] [![Python Version][pyvi]][pyvl] [![License][lii]][lil]
+
+[bsi]: http://img.shields.io/travis/RazerM/ratelimiter/master.svg?style=flat-square
+[bsl]: https://travis-ci.org/RazerM/ratelimiter
+[ppvi]: http://img.shields.io/pypi/v/ratelimiter.svg?style=flat-square
+[ppvl]: https://pypi.python.org/pypi/ratelimiter
+[pyvi]: https://img.shields.io/badge/python-2.7%2C%203-brightgreen.svg?style=flat-square
+[pyvl]: https://www.python.org/downloads/
+[lii]: http://img.shields.io/badge/license-Apache-blue.svg?style=flat-square
+[lil]: https://github.com/RazerM/ratelimiter/blob/master/LICENSE
 
 Simple Python module providing rate limiting.
 
-Overview
--------------
+## Overview
 
 This package provides the `ratelimiter` module, which ensures that an
 operation will not be executed more than a given number of times on a given
 period. This can prove useful when working with third parties APIs which
 require for example a maximum of 10 requests per second.
 
-Usage
--------------
+## Usage
 
-Decorator flavor:
+### Decorator
 
-    >>> from ratelimiter import RateLimiter
-    >>> @RateLimiter(max_calls=10, period=1.0)
-    ... def do_something():
-    ...     pass
-    ...
+```python
+from ratelimiter import RateLimiter
 
-Context manager flavor:
+@RateLimiter(max_calls=10, period=1)
+def do_something():
+    pass
+```
 
-    >>> from ratelimiter import RateLimiter
-    >>> rate_limiter = RateLimiter(max_calls=10, period=1.0)
-    >>> for i in range(100):
-    ...     with rate_limiter:
-    ...         do_something()
-    ...
+### Context Manager
 
-Using with callback:
+```python
+from ratelimiter import RateLimiter
 
-    >>> from ratelimiter import RateLimiter
-    >>> import time
-    >>> def limited(until):
-    ...     duration = int(round(until - time.time()))
-    ...     print('Rate limited, sleeping for %d seconds' % duration)
-    ...
-    >>> rate_limiter = RateLimiter(max_calls=2, period=3, callback=limited)
-    >>> for i in range(3):
-    ...     with rate_limiter:
-    ...         print('Iteration', i)
-    ...
-    Iteration 0
-    Iteration 1
-    Rate limited, sleeping for 3 seconds
-    Iteration 2
+rate_limiter = RateLimiter(max_calls=10, period=1)
+
+for i in range(100):
+    with rate_limiter:
+        do_something()
+
+```
+
+### Callback
+
+The callback is called in its own thread, so your callback may use `sleep` without delaying the rate limiter.
+
+```python
+import time
+
+from ratelimiter import RateLimiter
+
+def limited(until):
+    duration = int(round(until - time.time()))
+    print('Rate limited, sleeping for {:d} seconds'.format(duration))
+
+rate_limiter = RateLimiter(max_calls=2, period=3, callback=limited)
+
+for i in range(3):
+    with rate_limiter:
+        print('Iteration', i)
+```
+
+Output:
+```
+Iteration 0
+Iteration 1
+Rate limited, sleeping for 3 seconds
+Iteration 2
+```
+
+### asyncio
+
+The `RateLimiter` object can be used in an `async with` statement on Python 3.5+. Note that the callback must be a coroutine in this context. The coroutine callback is not called in a separate thread.
+
+```python
+import asyncio
+import time
+
+from ratelimiter import RateLimiter
+
+async def limited(until):
+    duration = int(round(until - time.time()))
+    print('Rate limited, sleeping for {:d} seconds'.format(duration))
+
+async def coro():
+    rate_limiter = RateLimiter(max_calls=2, period=3, callback=limited)
+    for i in range(3):
+        async with rate_limiter:
+            print('Iteration', i)
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(coro())
+```
 
 License
 -------------
 
 Original work Copyright 2013 Arnaud Porterie  
-Modified work Copyright 2015 Frazer McLean
+Modified work Copyright 2016 Frazer McLean
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
