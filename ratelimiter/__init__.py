@@ -20,7 +20,7 @@ import time
 import sys
 
 __author__ = 'Frazer McLean <frazer@frazermclean.co.uk>'
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 __license__ = 'Apache'
 __description__ = 'Simple python rate limiting object'
 
@@ -48,6 +48,10 @@ class RateLimiter(object):
         self.period = period
         self.max_calls = max_calls
         self.callback = callback
+
+        if PY35:
+            import asyncio
+            self._alock = asyncio.Lock()
 
     def __call__(self, f):
         """The __call__ function allows the RateLimiter object to be used as a
@@ -91,17 +95,18 @@ class RateLimiter(object):
         aenter_code = dedent("""
             async def __aenter__(self):
                 import asyncio
-                # We want to ensure that no more than max_calls were run in the allowed
-                # period. For this, we store the last timestamps of each call and run
-                # the rate verification upon each __enter__ call.
-                if len(self.calls) >= self.max_calls:
-                    until = time.time() + self.period - self._timespan
-                    if self.callback:
-                        asyncio.ensure_future(self.callback(until))
-                    sleeptime = until - time.time()
-                    if sleeptime > 0:
-                        await asyncio.sleep(sleeptime)
-                return self
+                with await self._alock:
+                    # We want to ensure that no more than max_calls were run in the allowed
+                    # period. For this, we store the last timestamps of each call and run
+                    # the rate verification upon each __enter__ call.
+                    if len(self.calls) >= self.max_calls:
+                        until = time.time() + self.period - self._timespan
+                        if self.callback:
+                            asyncio.ensure_future(self.callback(until))
+                        sleeptime = until - time.time()
+                        if sleeptime > 0:
+                            await asyncio.sleep(sleeptime)
+                    return self
 
             """)
         exec(aenter_code)
