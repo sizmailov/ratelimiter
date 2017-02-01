@@ -60,13 +60,13 @@ class TestBasic(unittest.TestCase):
             obj = RateLimiter(self.max_calls, self.period)
             for i in range(self.max_calls + 1):
                 with obj:
-                    # After the 'self.max_calls' iteration the execution 
-                    # inside the context manager should be blocked 
+                    # After the 'self.max_calls' iteration the execution
+                    # inside the context manager should be blocked
                     # for the 'self.period' seconds.
                     pass
         # The sum of the time in the iterations without the rate limit blocking
-        # is way lower than 'self.period'. If the duration of the all 
-        # iterations is greater or equal to the 'self.period' then blocking 
+        # is way lower than 'self.period'. If the duration of the all
+        # iterations is greater or equal to the 'self.period' then blocking
         # and sleeping after the 'self.max_calls' iteration has been occured.
         self.assertGreaterEqual(timer.duration, self.period)
 
@@ -83,7 +83,7 @@ class TestBasic(unittest.TestCase):
     def test_decorator_1(self):
         @RateLimiter(self.max_calls, self.period)
         def f():
-            # After the 'self.max_calls' iteration the execution 
+            # After the 'self.max_calls' iteration the execution
             # of the function should be blocked for the 'self.period' seconds.
             pass
 
@@ -91,8 +91,8 @@ class TestBasic(unittest.TestCase):
             [f() for i in range(self.max_calls + 1)]
 
         # The sum of the time in the iterations without the rate limit blocking
-        # is way lower than 'self.period'. If the duration of the all 
-        # iterations is greater or equal to the 'self.period' then blocking 
+        # is way lower than 'self.period'. If the duration of the all
+        # iterations is greater or equal to the 'self.period' then blocking
         # and sleeping after the 'self.max_calls' iteration has been occured.
         self.assertGreaterEqual(timer.duration, self.period)
 
@@ -120,14 +120,14 @@ class TestBasic(unittest.TestCase):
     def test_threading(self):
         @RateLimiter(self.max_calls, self.period)
         def f():
-            # After the 'self.max_calls' iteration the execution 
+            # After the 'self.max_calls' iteration the execution
             # of the function should be blocked for the 'self.period' seconds.
             pass
 
         with Timer() as timer:
             threads = []
             for i in range(self.max_calls + 1):
-                # Running each target in it's own thread should not affect 
+                # Running each target in it's own thread should not affect
                 # the rate limiting
                 t = threading.Thread(target=f)
                 threads.append(t)
@@ -135,8 +135,8 @@ class TestBasic(unittest.TestCase):
             [t.join() for t in threads]
 
         # The sum of the time in the iterations without the rate limit blocking
-        # is way lower than 'self.period'. If the duration of the all 
-        # iterations is greater or equal to the 'self.period' then blocking 
+        # is way lower than 'self.period'. If the duration of the all
+        # iterations is greater or equal to the 'self.period' then blocking
         # and sleeping after the 'self.max_calls' iteration has been occured.
         self.assertGreaterEqual(timer.duration, self.period)
 
