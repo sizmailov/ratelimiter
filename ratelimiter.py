@@ -116,7 +116,6 @@ class RateLimiter(object):
 
         __aexit__ = asyncio.coroutine(__exit__)
 
-
     @property
     def _timespan(self):
         return self.calls[-1] - self.calls[0]
