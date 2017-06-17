@@ -26,7 +26,7 @@ except ImportError:
     asyncio = None
 
 __author__ = 'Frazer McLean <frazer@frazermclean.co.uk>'
-__version__ = '1.1.1'
+__version__ = '1.2.0'
 __license__ = 'Apache'
 __description__ = 'Simple python rate limiting object'
 
