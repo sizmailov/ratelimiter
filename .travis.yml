@@ -6,4 +6,7 @@ python:
   - "3.5"
   - "3.6"
 install: # No dependencies
-script:  python -m unittest discover
+script:
+  - pip install -U pip setuptools
+  - pip install .[test]
+  - pytest

@@ -28,6 +28,14 @@ DESCRIPTION = metadata['description']
 
 AUTHOR, EMAIL = re.match(r'(.*) <(.*)>', AUTHOR_EMAIL).groups()
 
+extras_require = dict()
+
+extras_require['test'] = {
+    'pytest>=3.0',
+}
+
+extras_require['test:python_version>="3.5"'] = {'pytest-asyncio'}
+
 setup(
     name='ratelimiter',
     version=VERSION,
@@ -41,4 +49,5 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: Apache Software License',
     ],
-    license=LICENSE)
+    license=LICENSE,
+    extras_require=extras_require)

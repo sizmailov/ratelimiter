@@ -18,6 +18,12 @@ import functools
 import threading
 import time
 import sys
+from textwrap import dedent
+
+try:
+    import asyncio
+except ImportError:
+    asyncio = None
 
 __author__ = 'Frazer McLean <frazer@frazermclean.co.uk>'
 __version__ = '1.1.1'
@@ -33,7 +39,7 @@ class RateLimiter(object):
     """
 
     def __init__(self, max_calls, period=1.0, callback=None):
-        """Initialze a RateLimiter objects which enforces as much as max_calls
+        """Initialize a RateLimiter object which enforces as much as max_calls
         operations on period (eventually floating) number of seconds.
         """
         if period <= 0:
@@ -49,10 +55,15 @@ class RateLimiter(object):
         self.max_calls = max_calls
         self.callback = callback
         self._lock = threading.Lock()
+        self._alock = None
 
-        if PY35:
-            import asyncio
-            self._alock = asyncio.Lock()
+        # Lock to protect creation of self._alock
+        self._init_lock = threading.Lock()
+
+    def _init_async_lock(self):
+        with self._init_lock:
+            if self._alock is None:
+                self._alock = asyncio.Lock()
 
     def __call__(self, f):
         """The __call__ function allows the RateLimiter object to be used as a
@@ -91,13 +102,12 @@ class RateLimiter(object):
                 self.calls.popleft()
 
     if PY35:
-        import asyncio
-        from textwrap import dedent
-
         # We have to exec this due to syntax errors on earlier versions.
         aenter_code = dedent("""
             async def __aenter__(self):
-                import asyncio
+                if self._alock is None:
+                    self._init_async_lock()
+                    
                 with await self._alock:
                     # We want to ensure that no more than max_calls were run in the allowed
                     # period. For this, we store the last timestamps of each call and run
