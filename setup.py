@@ -40,7 +40,7 @@ setup(
     name='ratelimiter',
     version=VERSION,
     description=DESCRIPTION,
-    long_description=open('README').read(),
+    long_description=open('README.rst').read(),
     author=AUTHOR,
     author_email=EMAIL,
     url='https://github.com/RazerM/ratelimiter',
