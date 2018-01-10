@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import setup
 import re
+from setuptools import setup
 
-FILE = 'ratelimiter.py'
+FILE = 'ratelimiter/__init__.py'
 init_data = open(FILE).read()
 
 metadata = dict(re.findall("__([a-z]+)__ = '([^']+)'", init_data))
@@ -44,7 +44,7 @@ setup(
     author=AUTHOR,
     author_email=EMAIL,
     url='https://github.com/RazerM/ratelimiter',
-    py_modules=['ratelimiter'],
+    packages=['ratelimiter'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: Apache Software License',
