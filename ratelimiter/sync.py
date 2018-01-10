@@ -1,39 +1,14 @@
-# Original work Copyright 2013 Arnaud Porterie
-# Modified work Copyright 2016 Frazer McLean
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-import collections
+import time
 import functools
 import threading
-import time
-import sys
-from textwrap import dedent
-
-try:
-    import asyncio
-except ImportError:
-    asyncio = None
-
-__author__ = 'Frazer McLean <frazer@frazermclean.co.uk>'
-__version__ = '1.2.0.post0'
-__license__ = 'Apache'
-__description__ = 'Simple python rate limiting object'
-
-PY35 = sys.version_info >= (3, 5)
+import collections
 
 
 class RateLimiter(object):
+
     """Provides rate limiting for an operation with a configurable number of
     requests for a time period.
     """
@@ -59,11 +34,6 @@ class RateLimiter(object):
 
         # Lock to protect creation of self._alock
         self._init_lock = threading.Lock()
-
-    def _init_async_lock(self):
-        with self._init_lock:
-            if self._alock is None:
-                self._alock = asyncio.Lock()
 
     def __call__(self, f):
         """The __call__ function allows the RateLimiter object to be used as a
@@ -100,31 +70,6 @@ class RateLimiter(object):
             # back below the period. This is our 'sliding period' window.
             while self._timespan >= self.period:
                 self.calls.popleft()
-
-    if PY35:
-        # We have to exec this due to syntax errors on earlier versions.
-        aenter_code = dedent("""
-            async def __aenter__(self):
-                if self._alock is None:
-                    self._init_async_lock()
-                    
-                with await self._alock:
-                    # We want to ensure that no more than max_calls were run in the allowed
-                    # period. For this, we store the last timestamps of each call and run
-                    # the rate verification upon each __enter__ call.
-                    if len(self.calls) >= self.max_calls:
-                        until = time.time() + self.period - self._timespan
-                        if self.callback:
-                            asyncio.ensure_future(self.callback(until))
-                        sleeptime = until - time.time()
-                        if sleeptime > 0:
-                            await asyncio.sleep(sleeptime)
-                    return self
-
-            """)
-        exec(aenter_code)
-
-        __aexit__ = asyncio.coroutine(__exit__)
 
     @property
     def _timespan(self):
