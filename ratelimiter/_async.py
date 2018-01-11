@@ -5,7 +5,7 @@
 import time
 import asyncio
 
-from .sync import RateLimiter
+from ._sync import RateLimiter
 
 
 class AsyncRateLimiter(RateLimiter):

@@ -23,9 +23,9 @@ __description__ = 'Simple python rate limiting object'
 
 # Async support is provided only on Python 3.5+
 if sys.version_info >= (3, 5):
-    from .async import AsyncRateLimiter as RateLimiter
+    from ._async import AsyncRateLimiter as RateLimiter
 else:
-    from .sync import RateLimiter
+    from ._sync import RateLimiter
 
 __all__ = [
     "RateLimiter",
