@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Original work Copyright 2013 Arnaud Porterie
 # Modified work Copyright 2016 Frazer McLean
