@@ -3,7 +3,6 @@
 import time
 import functools
 import threading
-import collections
 
 
 class RateLimiter(object):
@@ -21,9 +20,7 @@ class RateLimiter(object):
         if max_calls <= 0:
             raise ValueError('Rate limiting number of calls should be > 0')
 
-        # We're using a deque to store the last execution timestamps, not for
-        # its maxlen attribute, but to allow constant time front removal.
-        self.calls = collections.deque()
+        self.calls = []
 
         self.period = period
         self.max_calls = max_calls
@@ -49,13 +46,21 @@ class RateLimiter(object):
             # We want to ensure that no more than max_calls were run in the allowed
             # period. For this, we store the last timestamps of each call and run
             # the rate verification upon each __enter__ call.
+
+            now = time.time()
+            self.calls = [
+                t
+                for t in self.calls
+                if t + self.period >= now
+            ]
+
             if len(self.calls) >= self.max_calls:
-                until = time.time() + self.period - self._timespan
+                until = self.calls[0] + self.period
                 if self.callback:
                     t = threading.Thread(target=self.callback, args=(until,))
                     t.daemon = True
                     t.start()
-                sleeptime = until - time.time()
+                sleeptime = until - now
                 if sleeptime > 0:
                     time.sleep(sleeptime)
             return self
@@ -64,12 +69,3 @@ class RateLimiter(object):
         with self._lock:
             # Store the last operation timestamp.
             self.calls.append(time.time())
-
-            # Pop the timestamp list front (ie: the older calls) until the sum goes
-            # back below the period. This is our 'sliding period' window.
-            while self._timespan >= self.period:
-                self.calls.popleft()
-
-    @property
-    def _timespan(self):
-        return self.calls[-1] - self.calls[0]
